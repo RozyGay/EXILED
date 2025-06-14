@@ -25,15 +25,14 @@ namespace Exiled.Events.Patches.Events.Server
     /// Patches <see cref="RoundSummary.Start"/> to invoke the <see cref="Handlers.Server.RoundStarted"/> event.
     /// </summary>
     [HarmonyPatch(typeof(RoundSystem), nameof(RoundSystem.Start))]
-    internal static class RoundStarted
+    internal static class RoundStartPatch
     {
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
             List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Pool.Get(instructions);
 
-            // Local variables for event args and intermediates
+            // Local variables for event args
             LocalBuilder ev = generator.DeclareLocal(typeof(RoundStartedEventArgs));
-            LocalBuilder player = generator.DeclareLocal(typeof(Player));
             LocalBuilder keepRoundOnOne = generator.DeclareLocal(typeof(bool));
 
             // Find index before ceq (IL_0033) to capture KeepRoundOnOne
@@ -51,26 +50,19 @@ namespace Exiled.Events.Patches.Events.Server
                     // Store KeepRoundOnOne from stack (result of !GetBool)
                     new CodeInstruction(OpCodes.Stloc_S, keepRoundOnOne),
 
-                    // Player.List.Where(p => !p.IsNPC && !p.IsHost).FirstOrDefault()
-                    new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(Player), nameof(Player.List))),
-                    new CodeInstruction(OpCodes.Ldsfld, Field(typeof(RoundStarted), nameof(NonNpcNonHostFilter))),
-                    new CodeInstruction(OpCodes.Callvirt, Method(typeof(System.Linq.Enumerable), nameof(System.Linq.Enumerable.Where), new[] { typeof(Player) })),
-                    new CodeInstruction(OpCodes.Call, Method(typeof(System.Linq.Enumerable), nameof(System.Linq.Enumerable.FirstOrDefault), new[] { typeof(Player) })),
-                    new CodeInstruction(OpCodes.Stloc_S, player),
-
                     // DateTime.UtcNow
                     new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(System.DateTime), nameof(System.DateTime.UtcNow))),
 
                     // Player.List.Where(p => !p.IsNPC && !p.IsHost).Count()
                     new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(Player), nameof(Player.List))),
-                    new CodeInstruction(OpCodes.Ldsfld, Field(typeof(RoundStarted), nameof(NonNpcNonHostFilter))),
+                    new CodeInstruction(OpCodes.Ldsfld, Field(typeof(RoundStartPatch), nameof(NonNpcNonHostFilter))),
                     new CodeInstruction(OpCodes.Callvirt, Method(typeof(System.Linq.Enumerable), nameof(System.Linq.Enumerable.Where), new[] { typeof(Player) })),
                     new CodeInstruction(OpCodes.Call, Method(typeof(System.Linq.Enumerable), nameof(System.Linq.Enumerable.Count), new[] { typeof(Player) })),
 
                     // Load KeepRoundOnOne from local
                     new CodeInstruction(OpCodes.Ldloc_S, keepRoundOnOne),
 
-                    // new RoundStartedEventArgs(player, DateTime.UtcNow, playerCount, keepRoundOnOne)
+                    // new RoundStartedEventArgs(DateTime.UtcNow, playerCount, keepRoundOnOne)
                     new CodeInstruction(OpCodes.Newobj, GetDeclaredConstructors(typeof(RoundStartedEventArgs))[0]),
                     new CodeInstruction(OpCodes.Stloc_S, ev),
 
