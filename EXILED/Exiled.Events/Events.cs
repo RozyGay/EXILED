@@ -5,16 +5,19 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+
 namespace Exiled.Events
 {
     using System;
     using System.Diagnostics;
-
+    using System.Linq;
     using API.Enums;
     using API.Features;
     using CentralAuth;
     using Exiled.API.Features.Core.UserSettings;
+    using Exiled.Events.EventArgs.Server;
     using Exiled.Events.Features;
+    using GameCore;
     using HarmonyLib;
     using InventorySystem.Items.Pickups;
     using InventorySystem.Items.Usables;
@@ -24,12 +27,14 @@ namespace Exiled.Events
     using Respawning;
     using UnityEngine.SceneManagement;
     using UserSettings.ServerSpecific;
+    using Log = API.Features.Log;
 
     /// <summary>
     /// Patch and unpatch events into the game.
     /// </summary>
     public sealed class Events : Plugin<Config>
     {
+
         private static Events instance;
 
         /// <summary>
@@ -72,7 +77,11 @@ namespace Exiled.Events
             Handlers.Player.Verified += Handlers.Internal.Round.OnVerified;
             Handlers.Map.ChangedIntoGrenade += Handlers.Internal.ExplodingGrenade.OnChangedIntoGrenade;
 
-            CharacterClassManager.OnRoundStarted += Handlers.Server.OnRoundStarted;
+            CharacterClassManager.OnRoundStarted += () => Handlers.Server.OnRoundStarted(new RoundStartedEventArgs(
+                   DateTime.UtcNow,
+                   Player.List.Where(p => !p.IsNPC && !p.IsHost).Count(),
+                   !ConfigFile.ServerConfig.GetBool("end_round_on_one_player", false)));
+            
             WaveManager.OnWaveSpawned += Handlers.Server.OnRespawnedTeam;
             InventorySystem.InventoryExtensions.OnItemAdded += Handlers.Player.OnItemAdded;
             InventorySystem.InventoryExtensions.OnItemRemoved += Handlers.Player.OnItemRemoved;
@@ -109,7 +118,10 @@ namespace Exiled.Events
             Handlers.Player.Verified -= Handlers.Internal.Round.OnVerified;
             Handlers.Map.ChangedIntoGrenade -= Handlers.Internal.ExplodingGrenade.OnChangedIntoGrenade;
 
-            CharacterClassManager.OnRoundStarted -= Handlers.Server.OnRoundStarted;
+            CharacterClassManager.OnRoundStarted -= () => Handlers.Server.OnRoundStarted(new RoundStartedEventArgs(
+                   DateTime.UtcNow,
+                   Player.List.Where(p => !p.IsNPC && !p.IsHost).Count(),
+                   !ConfigFile.ServerConfig.GetBool("end_round_on_one_player", false)));
 
             InventorySystem.InventoryExtensions.OnItemAdded -= Handlers.Player.OnItemAdded;
             InventorySystem.InventoryExtensions.OnItemRemoved -= Handlers.Player.OnItemRemoved;
