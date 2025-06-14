@@ -78,10 +78,10 @@ namespace Exiled.Events
             Handlers.Map.ChangedIntoGrenade += Handlers.Internal.ExplodingGrenade.OnChangedIntoGrenade;
 
             CharacterClassManager.OnRoundStarted += () => Handlers.Server.OnRoundStarted(new RoundStartedEventArgs(
-                   DateTime.UtcNow,
-                   Player.List.Where(p => !p.IsNPC && !p.IsHost).Count(),
-                   !ConfigFile.ServerConfig.GetBool("end_round_on_one_player", false)));
-            
+                DateTime.UtcNow,
+                Player.List.Where(p => !p.IsNPC && !p.IsHost).Count(),
+                !ConfigFile.ServerConfig.GetBool("end_round_on_one_player", false)));
+
             WaveManager.OnWaveSpawned += Handlers.Server.OnRespawnedTeam;
             InventorySystem.InventoryExtensions.OnItemAdded += Handlers.Player.OnItemAdded;
             InventorySystem.InventoryExtensions.OnItemRemoved += Handlers.Player.OnItemRemoved;

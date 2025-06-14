@@ -5,16 +5,17 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System;
+using Exiled.API.Features;
+using Exiled.Events.EventArgs.Interfaces;
+
 namespace Exiled.Events.EventArgs.Player
 {
-    using System;
-    using Exiled.API.Features;
-    using Exiled.Events.EventArgs.Interfaces;
 
     /// <summary>
     /// Contains all information before a Client command is executed.
     /// </summary>
-    public class ExecutingClientCommandEventArgs : IPlayerEvent
+    public class ExecutingClientCommandEventArgs : Exiled.Events.EventArgs.Interfaces.IPlayerEvent
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ExecutingClientCommandEventArgs"/> class.
@@ -23,7 +24,7 @@ namespace Exiled.Events.EventArgs.Player
         /// <param name="command"><inheritdoc cref="Command"/></param>
         /// <param name="arguments"><inheritdoc cref="Arguments"/></param>
         /// <param name="isAllowed"><inheritdoc cref="IsAllowed"/></param>
-        public ExecutingClientCommandEventArgs(Player player, string command, string[] arguments, bool isAllowed = true)
+        public ExecutingClientCommandEventArgs(Exiled.API.Features.Player player, string command, string[] arguments, bool isAllowed = true)
         {
             Player = player;
             Command = command;
@@ -32,7 +33,7 @@ namespace Exiled.Events.EventArgs.Player
         }
 
         /// <inheritdoc/>
-        public Player Player { get; }
+        public Exiled.API.Features.Player Player { get; }
 
         /// <summary>
         /// Gets the name of the Client command being executed.

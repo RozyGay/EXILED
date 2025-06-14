@@ -5,14 +5,14 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System;
+
 namespace Exiled.Events.EventArgs.Server
 {
-    using System;
-
     /// <summary>
     /// Contains information about the round start event.
     /// </summary>
-    public class RoundStartedEventArgs : EventArgs
+    public class RoundStartedEventArgs : System.EventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RoundStartedEventArgs"/> class.

@@ -5,28 +5,28 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
+
+using Exiled.API.Features;
+using Exiled.API.Features.Pools;
+using Exiled.Events.EventArgs.Server;
+
+using HarmonyLib;
+
+using static HarmonyLib.AccessTools;
+
 namespace Exiled.Events.Patches.Events.Server
 {
-    using System.Collections.Generic;
-    using System.Reflection;
-    using System.Reflection.Emit;
-
-    using Exiled.API.Features;
-    using Exiled.API.Features.Pools;
-    using Exiled.Events.EventArgs.Server;
-
-    using HarmonyLib;
-
-    using static HarmonyLib.AccessTools;
-
-    using RoundSystem = RoundSummary;
-
     /// <summary>
     /// Patches <see cref="RoundSummary.Start"/> to invoke the <see cref="Handlers.Server.RoundStarted"/> event.
     /// </summary>
-    [HarmonyPatch(typeof(RoundSystem), nameof(RoundSystem.Start))]
-    internal static class RoundStartPatch
+    [HarmonyPatch(typeof(RoundSummary), nameof(RoundSummary.Start))]
+    internal static class RoundStarted
     {
+        private static readonly System.Func<API.Features.Player, bool> NonNpcNonHostFilter = p => !p.IsNPC && !p.IsHost;
+
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
             List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Pool.Get(instructions);
@@ -39,12 +39,12 @@ namespace Exiled.Events.Patches.Events.Server
             const int offset = -2;
             int index = newInstructions.FindIndex(instruction =>
                 instruction.opcode == OpCodes.Ceq &&
-                newInstructions[newInstructions.IndexOf(instruction) + 1].opcode == OpCodes.Stfld &&
-                (instruction.operand == null || newInstructions[newInstructions.IndexOf(instruction) + 1].operand is FieldInfo field && field.Name == "KeepRoundOnOne")) + offset;
+                (newInstructions[newInstructions.IndexOf(instruction) + 1].opcode == OpCodes.Stfld &&
+                 (newInstructions[newInstructions.IndexOf(instruction) + 1].operand is FieldInfo field && field.Name == "KeepRoundOnOne")));
 
             // Insert instructions to create and invoke RoundStarted event
             newInstructions.InsertRange(
-                index,
+                index + offset,
                 new[]
                 {
                     // Store KeepRoundOnOne from stack (result of !GetBool)
@@ -54,10 +54,10 @@ namespace Exiled.Events.Patches.Events.Server
                     new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(System.DateTime), nameof(System.DateTime.UtcNow))),
 
                     // Player.List.Where(p => !p.IsNPC && !p.IsHost).Count()
-                    new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(Player), nameof(Player.List))),
-                    new CodeInstruction(OpCodes.Ldsfld, Field(typeof(RoundStartPatch), nameof(NonNpcNonHostFilter))),
-                    new CodeInstruction(OpCodes.Callvirt, Method(typeof(System.Linq.Enumerable), nameof(System.Linq.Enumerable.Where), new[] { typeof(Player) })),
-                    new CodeInstruction(OpCodes.Call, Method(typeof(System.Linq.Enumerable), nameof(System.Linq.Enumerable.Count), new[] { typeof(Player) })),
+                    new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(API.Features.Player), nameof(API.Features.Player.List))),
+                    new CodeInstruction(OpCodes.Ldsfld, Field(typeof(RoundStarted), nameof(NonNpcNonHostFilter))),
+                    new CodeInstruction(OpCodes.Callvirt, Method(typeof(System.Linq.Enumerable), nameof(System.Linq.Enumerable.Where), new[] { typeof(API.Features.Player) })),
+                    new CodeInstruction(OpCodes.Call, Method(typeof(System.Linq.Enumerable), nameof(System.Linq.Enumerable.Count), new[] { typeof(API.Features.Player) })),
 
                     // Load KeepRoundOnOne from local
                     new CodeInstruction(OpCodes.Ldloc_S, keepRoundOnOne),
@@ -80,7 +80,5 @@ namespace Exiled.Events.Patches.Events.Server
 
             ListPool<CodeInstruction>.Pool.Return(newInstructions);
         }
-
-        private static readonly System.Func<Player, bool> NonNpcNonHostFilter = p => !p.IsNPC && !p.IsHost;
     }
 }

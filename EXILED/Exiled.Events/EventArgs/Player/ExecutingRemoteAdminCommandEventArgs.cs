@@ -5,16 +5,18 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace Exiled.Events.EventArgs.Player
-{
+
     using System;
     using Exiled.API.Features;
     using Exiled.Events.EventArgs.Interfaces;
+    
+namespace Exiled.Events.EventArgs.Player
+{
 
     /// <summary>
     /// Contains all information before a Remote Admin command is executed.
     /// </summary>
-    public class ExecutingRemoteAdminCommandEventArgs : IPlayerEvent
+    public class ExecutingRemoteAdminCommandEventArgs : Exiled.Events.EventArgs.Interfaces.IPlayerEvent
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ExecutingRemoteAdminCommandEventArgs"/> class.
@@ -23,7 +25,7 @@ namespace Exiled.Events.EventArgs.Player
         /// <param name="command"><inheritdoc cref="Command"/></param>
         /// <param name="arguments"><inheritdoc cref="Arguments"/></param>
         /// <param name="isAllowed"><inheritdoc cref="IsAllowed"/></param>
-        public ExecutingRemoteAdminCommandEventArgs(Player player, string command, string[] arguments, bool isAllowed = true)
+        public ExecutingRemoteAdminCommandEventArgs(API.Features.Player player, string command, string[] arguments, bool isAllowed = true)
         {
             Player = player;
             Command = command;
@@ -32,7 +34,7 @@ namespace Exiled.Events.EventArgs.Player
         }
 
         /// <inheritdoc/>
-        public Player Player { get; }
+        public Exiled.API.Features.Player Player { get; }
 
         /// <summary>
         /// Gets the name of the Remote Admin command being executed.
