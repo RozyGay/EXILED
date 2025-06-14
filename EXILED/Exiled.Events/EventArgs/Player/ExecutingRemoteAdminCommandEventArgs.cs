@@ -5,13 +5,12 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-
-    using System;
-    using Exiled.API.Features;
-    using Exiled.Events.EventArgs.Interfaces;
-    
 namespace Exiled.Events.EventArgs.Player
 {
+    using System;
+
+    using Exiled.API.Features;
+    using Exiled.Events.EventArgs.Interfaces;
 
     /// <summary>
     /// Contains all information before a Remote Admin command is executed.

@@ -4,14 +4,15 @@
 // Licensed under the CC BY-SA 3.0 license.
 // </copyright>
 // -----------------------------------------------------------------------
-using Exiled.Events.EventArgs.Player;
-using Exiled.Events.Features;
-using RemoteAdmin;
 
 namespace Exiled.Events.Handlers
 {
 #pragma warning disable SA1623 // Property summary documentation should match accessors
 
+    using Exiled.Events.EventArgs.Player;
+    using Exiled.Events.Features;
+
+    using RemoteAdmin;
 
     /// <summary>
     /// Player command related events.
@@ -34,7 +35,6 @@ namespace Exiled.Events.Handlers
         /// <param name="ev">The <see cref="ExecutingRemoteAdminCommandEventArgs"/> instance.</param>
         public static void OnExecutingRemoteAdminCommand(ExecutingRemoteAdminCommandEventArgs ev) => ExecutingRemoteAdminCommand.InvokeSafely(ev);
 
-        
         /// <summary>
         /// Called before a Client command is executed.
         /// </summary>

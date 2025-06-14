@@ -1,31 +1,30 @@
 // -----------------------------------------------------------------------
-// <copyright file="RoundStartPatch.cs" company="ExMod Team">
+// <copyright file="RoundStarted.cs" company="ExMod Team">
 // Copyright (c) ExMod Team. All rights reserved.
 // Licensed under the CC BY-SA 3.0 license.
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System.Collections.Generic;
-using System.Reflection;
-using System.Reflection.Emit;
-
-using Exiled.API.Features;
-using Exiled.API.Features.Pools;
-using Exiled.Events.EventArgs.Server;
-
-using HarmonyLib;
-
-using static HarmonyLib.AccessTools;
-
 namespace Exiled.Events.Patches.Events.Server
 {
+    using System.Collections.Generic;
+    using System.Reflection;
+    using System.Reflection.Emit;
+
+    using Exiled.API.Features;
+    using Exiled.API.Features.Pools;
+    using Exiled.Events.EventArgs.Server;
+    using HarmonyLib;
+
+    using static HarmonyLib.AccessTools;
+
     /// <summary>
     /// Patches <see cref="RoundSummary.Start"/> to invoke the <see cref="Handlers.Server.RoundStarted"/> event.
     /// </summary>
     [HarmonyPatch(typeof(RoundSummary), nameof(RoundSummary.Start))]
     internal static class RoundStarted
     {
-        private static readonly System.Func<API.Features.Player, bool> NonNpcNonHostFilter = p => !p.IsNPC && !p.IsHost;
+        private static readonly System.Func<Player, bool> NonNpcNonHostFilter = p => !p.IsNPC && !p.IsHost;
 
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
@@ -54,10 +53,10 @@ namespace Exiled.Events.Patches.Events.Server
                     new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(System.DateTime), nameof(System.DateTime.UtcNow))),
 
                     // Player.List.Where(p => !p.IsNPC && !p.IsHost).Count()
-                    new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(API.Features.Player), nameof(API.Features.Player.List))),
+                    new CodeInstruction(OpCodes.Call, PropertyGetter(typeof(Player), nameof(Player.List))),
                     new CodeInstruction(OpCodes.Ldsfld, Field(typeof(RoundStarted), nameof(NonNpcNonHostFilter))),
-                    new CodeInstruction(OpCodes.Callvirt, Method(typeof(System.Linq.Enumerable), nameof(System.Linq.Enumerable.Where), new[] { typeof(API.Features.Player) })),
-                    new CodeInstruction(OpCodes.Call, Method(typeof(System.Linq.Enumerable), nameof(System.Linq.Enumerable.Count), new[] { typeof(API.Features.Player) })),
+                    new CodeInstruction(OpCodes.Callvirt, Method(typeof(System.Linq.Enumerable), nameof(System.Linq.Enumerable.Where), new[] { typeof(Player) })),
+                    new CodeInstruction(OpCodes.Call, Method(typeof(System.Linq.Enumerable), nameof(System.Linq.Enumerable.Count), new[] { typeof(Player) })),
 
                     // Load KeepRoundOnOne from local
                     new CodeInstruction(OpCodes.Ldloc_S, keepRoundOnOne),
